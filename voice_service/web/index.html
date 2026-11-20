@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f3ee">
+  <title>念稿 NianGao · AI 配音工作台</title>
+  <link rel="stylesheet" href="/studio.css">
+  <script src="/private-voices.js" defer></script>
+  <script src="/studio.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>念稿 NianGao</a>
+    <div class="header-right">
+      <span class="invite-label"><i aria-hidden="true"></i>邀请制</span>
+      <button id="sign-out" class="text-button" type="button" hidden>退出</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="access-view" class="access-grid" hidden>
+      <div class="access-art">
+        <div>
+          <p class="eyebrow">QWEN3–TTS</p>
+          <h1>把文字<br>读成声音<span class="accent">。</span></h1>
+          <p class="lead">粘贴文稿，即可生成配音、在线试听并下载 MP3。</p>
+        </div>
+        <div class="voice-art" aria-hidden="true">
+          <div class="ring ring-outer"></div><div class="ring ring-inner"></div>
+          <div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
+      </div>
+      <div class="access-form">
+        <form id="invite-form">
+          <h2>进入工作台</h2>
+          <p>请使用收到的网页邀请码。</p>
+          <label for="invite">邀请码</label>
+          <input id="invite" type="password" required maxlength="100" autocomplete="off" spellcheck="false" placeholder="输入邀请码">
+          <p id="invite-error" class="error" role="alert" hidden></p>
+          <button id="invite-submit" class="primary" type="submit">进入工作台 <span aria-hidden="true">↗</span></button>
+        </form>
+      </div>
+    </section>
+
+    <section id="studio" hidden>
+      <div class="studio-heading">
+        <p class="eyebrow">QWEN3–TTS</p>
+        <h1>文字配音<span class="accent">。</span></h1>
+        <p class="lead">输入文稿，选择音色，生成可试听和下载的 MP3。</p>
+      </div>
+
+      <div class="studio-grid">
+        <form id="speech-form" class="script-panel">
+          <div class="panel-heading">
+            <label for="script-input">配音文稿</label>
+            <span id="count" aria-live="off"></span>
+          </div>
+          <textarea id="script-input" placeholder="在这里输入或粘贴要朗读的文字…" aria-describedby="script-help count" spellcheck="false"></textarea>
+          <div class="panel-bottom">
+            <p id="script-help">建议用标点分隔句子，停顿会更自然。</p>
+            <button id="generate" class="primary" type="submit" disabled>生成配音 <span aria-hidden="true">↗</span></button>
+          </div>
+          <p id="speech-error" class="error" role="alert" hidden></p>
+        </form>
+
+        <div class="side">
+          <div class="voice-panel">
+            <div class="voice-heading">
+              <label for="voice-select">选择音色</label>
+              <button id="create-voice" class="text-button accent" type="button" hidden>＋ 创建音色</button>
+            </div>
+            <div class="voice-controls">
+              <select id="voice-select"></select>
+              <button id="voice-preview-button" class="voice-preview" type="button" aria-controls="voice-preview-player" aria-pressed="false">
+                <span id="voice-preview-icon" aria-hidden="true">▶</span>
+                <span id="voice-preview-label">试听</span>
+              </button>
+            </div>
+            <audio id="voice-preview-player" preload="none" hidden></audio>
+            <button id="delete-voice" class="text-button delete-voice" type="button" hidden>删除此私人音色</button>
+            <p id="voice-preview-error" class="error" role="alert" hidden></p>
+          </div>
+          <section class="result-panel" aria-labelledby="result-title">
+            <div class="result-heading"><h2 id="result-title">配音结果</h2><span id="duration"></span></div>
+            <p id="job-status" role="status" aria-live="polite">生成后可在这里试听或下载。</p>
+            <div id="audio-result" hidden>
+              <audio id="player" aria-label="试听配音" controls preload="metadata"></audio>
+              <a id="download" class="download" download>下载 MP3 <span aria-hidden="true">↓</span></a>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+    <p id="boot-error" class="error" role="alert" hidden></p>
+  </main>
+
+  <dialog id="private-voice-dialog" aria-labelledby="private-dialog-title">
+    <div class="dialog-heading">
+      <h2 id="private-dialog-title">创建私人音色</h2>
+      <button type="button" id="close-private-voice" class="close-button" aria-label="关闭">×</button>
+    </div>
+    <div class="voice-modes" aria-label="创建方式">
+      <button type="button" id="record-mode" aria-pressed="true">录我的声音</button>
+      <button type="button" id="design-mode" aria-pressed="false">声音定制</button>
+    </div>
+    <section id="record-pane" aria-label="录音克隆">
+      <p class="dialog-help">用平时说话的语速读完这段台词。录音完成后，可以先回听。</p>
+      <blockquote id="record-script"></blockquote>
+      <div class="dialog-actions">
+        <button type="button" id="record-toggle" class="secondary">开始录音</button>
+        <span id="record-time" aria-live="off">0:00</span>
+      </div>
+      <audio id="record-playback" controls preload="metadata" aria-label="回听录音" hidden></audio>
+      <button type="button" id="create-record-candidate" class="primary private-generate" disabled>生成克隆试听</button>
+    </section>
+    <section id="design-pane" aria-label="描述或随机设计" hidden>
+      <label for="voice-description">你想要怎样的声音？</label>
+      <textarea id="voice-description" placeholder="例如：沉稳的普通话女声，语速稍慢，像在播夜间电台。"></textarea>
+      <div class="dialog-actions design-actions">
+        <button type="button" id="create-random-candidate" class="secondary">随机设计</button>
+        <button type="button" id="create-design-candidate" class="primary">生成定制试听</button>
+      </div>
+    </section>
+    <p id="candidate-status" class="dialog-help" role="status" hidden></p>
+    <p id="candidate-error" class="error" role="alert" hidden></p>
+    <section id="candidate-result" class="candidate-result" aria-labelledby="candidate-title" hidden>
+      <h3 id="candidate-title">试听候选音色</h3>
+      <p id="candidate-description" class="dialog-help" hidden></p>
+      <audio id="candidate-playback" controls preload="metadata" aria-label="试听候选音色"></audio>
+      <form id="save-voice-form">
+        <label for="private-voice-name">音色名称</label>
+        <div class="save-row">
+          <input id="private-voice-name" required placeholder="给这个声音取个名字">
+          <button type="submit" id="save-private-voice" class="primary">保存音色</button>
+        </div>
+      </form>
+    </section>
+  </dialog>
+
+  <footer>Qwen3-TTS CustomVoice <span>·</span> AI 合成语音</footer>
+</body>
+</html>

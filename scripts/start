@@ -1,0 +1,8 @@
+#!/bin/bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
+exec .venv/bin/python -m uvicorn voice_service.app:app --host 127.0.0.1 \
+  --port "${VOICE_PORT:-8796}" --workers 1 --proxy-headers --forwarded-allow-ips 127.0.0.1 \
+  --no-access-log --timeout-keep-alive 5 --limit-concurrency 48

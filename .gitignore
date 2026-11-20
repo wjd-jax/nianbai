@@ -1,0 +1,28 @@
+# Local credentials, data, and private deployment records
+/.runtime/
+/任务说明.md
+/.env
+/.env.*
+*.sqlite3
+*.sqlite3-*
+/scripts/build_sunny_engine
+/scripts/sunny_service.py
+/scripts/sync_sunny
+/requirements-sunny.in
+/requirements-sunny.lock
+/assets/sunny-model.sha256
+
+# Models and generated files
+/assets/model/
+/assets/base/
+/assets/design/
+*.safetensors
+*.gguf
+*.partial
+/output/
+/.playwright-cli/
+
+# Python and macOS
+/.venv/
+__pycache__/
+.DS_Store

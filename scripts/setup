@@ -1,0 +1,28 @@
+#!/bin/bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
+private_voices=false
+case "${1:-}" in
+  '') ;;
+  --with-private-voices) private_voices=true ;;
+  *) echo "用法: scripts/setup [--with-private-voices]" >&2; exit 2 ;;
+esac
+if [[ "$#" -gt 1 ]]; then
+  echo "用法: scripts/setup [--with-private-voices]" >&2
+  exit 2
+fi
+[[ "$(uname -m)" == arm64 && "$(uname -s)" == Darwin ]] || { echo "需要 Apple Silicon Mac" >&2; exit 1; }
+[[ "$(sw_vers -productVersion | cut -d. -f1)" -ge 26 ]] || { echo "当前 MLX 依赖需要 macOS 26 或以上" >&2; exit 1; }
+command -v uv >/dev/null || { echo "请先安装 uv" >&2; exit 1; }
+command -v ffmpeg >/dev/null || { echo "请先安装 FFmpeg" >&2; exit 1; }
+if [[ ! -x .venv/bin/python ]]; then
+  uv venv --python "$(cat .python-version)" .venv
+fi
+uv pip sync --require-hashes --python .venv/bin/python requirements.lock
+if [[ "$private_voices" == true || ( -f assets/base/model.safetensors && -f assets/design/model.safetensors ) ]]; then
+  .venv/bin/python scripts/setup_models.py --with-private-voices
+else
+  .venv/bin/python scripts/setup_models.py
+fi
+.venv/bin/python -c 'from voice_service.access import bootstrap; bootstrap()'
