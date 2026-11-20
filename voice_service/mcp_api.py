@@ -68,7 +68,7 @@ def create_server():
         allowed_hosts.extend((public_host, public_host + ":443"))
         allowed_origins.extend(("https://" + public_host, "https://" + public_host + ":443"))
     server = MCPServer(
-        "NianGao TTS",
+        "念白",
         instructions=(
             "先用 list_voices 查询当前密钥可用的音色。generate_speech 提交异步任务，"
             "返回任务 ID；间隔约 2 秒调用 get_speech_status。成功后可用 get_speech_audio 获取 MP3，"

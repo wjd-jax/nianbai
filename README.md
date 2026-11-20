@@ -1,10 +1,10 @@
-# 念稿 NianGao
+# 念白
 
 **在 Mac 上运行的 AI 配音工作台。** 粘贴文稿，试听九种内置音色，生成并下载 MP3。也可以直接在浏览器录制自己的声音，或用文字设计一个新音色。网页、REST API 和 MCP 共用本地 Qwen3-TTS 推理。
 
 [快速开始](#快速开始) · [使用工作台](#使用工作台) · [REST API](#rest-api) · [MCP](#mcp) · [部署与数据](#部署与数据)
 
-![念稿工作台，展示文稿输入、音色试听和 MP3 下载](docs/workspace.png)
+![念白工作台，展示文稿输入、音色试听和 MP3 下载](docs/workspace.png)
 
 ## 功能
 
@@ -24,8 +24,8 @@
 
 ```bash
 brew install uv ffmpeg
-git clone https://github.com/wjd-jax/niangao-tts.git
-cd niangao-tts
+git clone https://github.com/wjd-jax/nianbai.git
+cd nianbai
 
 # 安装内置音色，下载约 2.7 GB 模型文件
 ./scripts/setup
@@ -79,7 +79,7 @@ VOICE_API_KEY="$(cat .runtime/api-owner.txt)"
 TASK=$(curl -fsS "$BASE/v1/audio/speech" \
   -H "Authorization: Bearer $VOICE_API_KEY" \
   -H 'Content-Type: application/json' \
-  -d '{"input":"你好，欢迎使用念稿。","voice":"serena"}')
+  -d '{"input":"你好，欢迎使用念白。","voice":"serena"}')
 
 STATUS_URL=$(printf '%s' "$TASK" | jq -r '.status_url')
 curl -fsS "$BASE$STATUS_URL" -H "Authorization: Bearer $VOICE_API_KEY"
@@ -102,7 +102,7 @@ AI 可以按表格顺序完成一次配音。只需下载链接时，在任务�
 
 ## 部署与数据
 
-- **本机常驻**。执行 `.venv/bin/python scripts/launch.py install` 注册当前用户的 macOS LaunchAgent。它在 `~/Library/Application Support/NianGao` 安装运行副本，用户登录后启动。用同一脚本的 `status`、`restart` 和 `stop` 管理服务。安装之前停止占用同一端口的前台实例。
+- **本机常驻**。执行 `.venv/bin/python scripts/launch.py install` 注册当前用户的 macOS LaunchAgent。它在 `~/Library/Application Support/Nianbai` 安装运行副本，用户登录后启动。早期安装会沿用原运行目录。用同一脚本的 `status`、`restart` 和 `stop` 管理服务。安装之前停止占用同一端口的前台实例。
 - **远程访问**。用支持 TLS 的反向代理或隧道转发到 `127.0.0.1:8796`。需要开放 MCP 时，将 `VOICE_PUBLIC_HOST` 设为该域名，例如 `VOICE_PUBLIC_HOST=voice.example.com ./scripts/start`。通过 LaunchAgent 安装时也可在 `install` 命令前设置。浏览器在远程录音时需要 HTTPS。
 - **凭据与备份**。邀请码只用于网页，API Key 用于 REST 和 MCP。通过 `scripts/manage_access.py` 的 `add`、`rotate` 和 `revoke` 管理凭据，变更后重启服务。备份时一同保管 `.runtime/access.json` 和运行目录的 `.runtime/private-voices.sqlite3`；后者包含已保存音色的参考语音、台词和样音。
 - **默认限制**。每条文稿最多 240 个字符，三种入口合计同时生成 1 条、排队 2 条。最近 64 个完成结果在内存中最多保留 30 分钟，重启清空任务与结果。请及时下载需要保留的文件。

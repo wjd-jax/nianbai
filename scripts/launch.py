@@ -11,10 +11,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 LOCAL_CONFIG = ROOT / ".runtime/deploy.json"
 CONFIG = json.loads(LOCAL_CONFIG.read_text()) if LOCAL_CONFIG.is_file() else {}
-DEPLOY = Path(CONFIG.get("directory", "~/Library/Application Support/NianGao")).expanduser()
+LEGACY_DEPLOY = Path.home() / "Library/Application Support/NianGao"
+DEPLOY = Path(CONFIG.get("directory", str(
+    LEGACY_DEPLOY if LEGACY_DEPLOY.is_dir() else Path.home() / "Library/Application Support/Nianbai"
+))).expanduser()
 RUNTIME = DEPLOY / ".runtime"
 PROJECT_ACCESS = ROOT / ".runtime/access.json"
-SERVICE = CONFIG.get("label", "io.github.niangao.tts")
+SERVICE = CONFIG.get("label", "io.github.niangao.tts" if DEPLOY == LEGACY_DEPLOY else "io.github.nianbai.tts")
 PREVIEW = SERVICE + ".preview"
 FIXED = SERVICE + ".tunnel"
 DOMAIN = os.environ.get("VOICE_PUBLIC_HOST") or CONFIG.get("public_host", "")
